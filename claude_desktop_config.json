@@ -1,0 +1,15 @@
+{
+  "_comment": "Add this entry to your existing claude_desktop_config.json under mcpServers. Replace the absolute paths with your local paths. Use the venv's Python (not bare 'python') — Claude Desktop launches as a GUI app and does not inherit your shell PATH, so a bare 'python' often fails to find the right interpreter or installed dependencies.",
+
+  "mcpServers": {
+    "tadawul-analytics": {
+      "command": "/ABSOLUTE/PATH/TO/tadawul_mcp/.venv/bin/python",
+      "args": [
+        "/ABSOLUTE/PATH/TO/tadawul_mcp/tadawul_mcp_server.py"
+      ],
+      "env": {
+        "TADAWUL_DB": "/ABSOLUTE/PATH/TO/tadawul_mcp/tadawul.db"
+      }
+    }
+  }
+}

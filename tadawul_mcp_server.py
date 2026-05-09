@@ -702,35 +702,56 @@ def compare_stocks(tickers: list[str],
 @mcp.tool()
 def sector_summary(sector: str | None = None) -> list[dict]:
     """
-    Aggregate KPIs by sector — median P/E, median yield, total market cap,
-    constituent count.
+    Per-sector aggregate KPIs computed across all constituents in the local
+    snapshot. Returns BOTH median and mean for each metric so the caller can
+    pick the appropriate central-tendency statistic. Median is robust to
+    outliers (e.g. one mega-cap distorting an average), mean is what you
+    get from a simple SUM/COUNT.
+
+    Field naming is explicit on purpose: every field is prefixed with
+    `median_` or `mean_`. Do NOT present a `mean_*` value as a "median" —
+    they will differ for any sector with skewed distributions.
 
     Args:
         sector: Optional single sector to focus on. If None, return one row
                 per sector.
 
     Returns:
-        List of sector aggregates.
+        List of sector aggregates with both median_* and mean_* fields for
+        trailing P/E, dividend yield, ROE, profit margin, and debt/equity.
     """
-    base = """
-        SELECT sector,
-               COUNT(*) AS constituents,
-               SUM(marketCap)              AS total_market_cap,
-               AVG(trailingPE)             AS avg_pe,
-               AVG(dividendYield)          AS avg_dividend_yield,
-               AVG(returnOnEquity)         AS avg_roe,
-               AVG(profitMargins)          AS avg_profit_margin,
-               AVG(debtToEquity)           AS avg_debt_to_equity
-          FROM summary
-         WHERE sector IS NOT NULL
-    """
+    cols = [
+        ("trailingPE", "pe"),
+        ("dividendYield", "dividend_yield"),
+        ("returnOnEquity", "roe"),
+        ("profitMargins", "profit_margin"),
+        ("debtToEquity", "debt_to_equity"),
+    ]
+    sql_cols = ", ".join(c[0] for c in cols)
+    sql = f"SELECT sector, marketCap, {sql_cols} FROM summary WHERE sector IS NOT NULL"
     params: list[Any] = []
     if sector:
-        base += " AND sector = ?"; params.append(sector)
-    base += " GROUP BY sector ORDER BY total_market_cap DESC"
+        sql += " AND sector = ?"; params.append(sector)
     with db() as conn:
-        rows = conn.execute(base, params).fetchall()
-    return [_row_to_dict(r) for r in rows]
+        df = pd.read_sql(sql, conn, params=params)
+    if df.empty:
+        return []
+
+    out: list[dict] = []
+    for sec, group in df.groupby("sector", sort=False):
+        row: dict[str, Any] = {
+            "sector": sec,
+            "constituents": int(len(group)),
+            "total_market_cap": _clean(group["marketCap"].sum()),
+        }
+        for src, label in cols:
+            series = group[src].dropna()
+            row[f"median_{label}"] = _clean(series.median()) if not series.empty else None
+            row[f"mean_{label}"] = _clean(series.mean()) if not series.empty else None
+            row[f"{label}_n"] = int(series.shape[0])
+        out.append(row)
+    out.sort(key=lambda r: r.get("total_market_cap") or 0, reverse=True)
+    return out
 
 
 @mcp.tool()

@@ -1,0 +1,24 @@
+- id: q1_bank_screen
+  text: "List Tadawul-listed banks where return on equity is above 15% and trailing P/E is below 15. Show ticker, P/E, ROE, market cap."
+  type: screen
+- id: q2_top_5y_total_return
+  text: "Top 10 Tadawul stocks by 5-year annualized total return (price plus reinvested dividends), restricted to market cap above 10 billion SAR. Show ticker, name, 5y annualized return, current market cap."
+  type: rank
+- id: q3_aramco_total_return
+  text: "What is the 5-year annualized total return on 2222.SR with dividends reinvested?"
+  type: compute
+- id: q4_correlation
+  text: "Pairwise correlation matrix of daily returns for 1120, 2010, 2222, 7010 over the last 12 months."
+  type: stat
+- id: q5_sector_compare
+  text: "Compare the median trailing P/E and median dividend yield of the Tadawul Energy sector vs the Telecommunication Services sector. One row per sector."
+  type: sector
+- id: q6_momentum
+  text: "Top 5 gainers and top 5 losers on Tadawul over the last 3 months, restricted to stocks with market cap above 5 billion SAR. Show ticker, name, 3-month price change percent."
+  type: momentum
+- id: q7_drawdown
+  text: "Which 5 Tadawul large-caps (market cap above 10 billion SAR) currently sit furthest below their 52-week high? Show ticker, current price, 52-week high, percent below high."
+  type: drawdown
+- id: q8_dividend
+  text: "Tadawul stocks with current dividend yield above 4% and at least 5 consecutive years of dividend payments. Cap at 10 names. Show ticker, name, current yield, years of consecutive payments."
+  type: dividend

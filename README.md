@@ -6,6 +6,12 @@ LLM-with-search **cannot** replicate the value: universe-wide screening,
 multi-stock statistics, true total returns, and risk metrics computed
 deterministically from cached price history.
 
+> **Benchmarked head-to-head against web search.** Same model, same prompt,
+> 8 Tadawul analytics questions, 3 runs each. With this MCP: 7 / 8 answered
+> with concrete numbers. Without it (web search only): 1 / 8.
+> See [`BENCHMARKS.md`](BENCHMARKS.md) for the full results, including the
+> two methodology bugs the bench surfaced and the commits that fixed them.
+
 ## ⚠️ Information only — not financial advice
 
 This server is for **information, research, and educational purposes only**.

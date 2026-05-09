@@ -448,11 +448,27 @@ def total_return(ticker: str, years: float = 5.0,
 
     cagr = (1.0 + total_ret) ** (1.0 / actual_years) - 1.0 if actual_years > 0 else None
 
+    coverage = actual_years / years if years > 0 else 0.0
+    truncated = coverage < 0.85
+    note = None
+    if truncated:
+        note = (
+            f"Window truncated: requested {years}y but only {actual_years:.2f}y of data "
+            f"available (coverage {coverage:.0%}). The annualized CAGR is computed over "
+            f"the actual {actual_years:.2f}y window and should NOT be presented as a "
+            f"{years}-year return. For ranking against full-history names, exclude this "
+            f"ticker or compare like-for-like windows."
+        )
+
     return {
         "ticker": sym,
         "start_date": px["date"].iloc[0].strftime("%Y-%m-%d"),
         "end_date":   px["date"].iloc[-1].strftime("%Y-%m-%d"),
+        "years_requested": years,
         "years_actual": _clean(actual_years),
+        "window_coverage_ratio": _clean(coverage),
+        "window_truncated": truncated,
+        "window_note": note,
         "start_price": _clean(p0),
         "end_price": _clean(p1),
         "dividends_paid_in_window": _clean(d_total),
